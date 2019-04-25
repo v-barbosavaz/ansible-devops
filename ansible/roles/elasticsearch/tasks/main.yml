@@ -1,0 +1,16 @@
+---
+- name: add repo file
+  become: true
+  copy:
+    src: elasticsearch.repo
+    dest: /etc/yum.repos.d/
+
+- name: install java
+  become: true
+  yum:
+    name: java-1.8.0-openjdk
+
+- name: install elasticsearch
+  become: true
+  yum:
+    name: elasticsearch

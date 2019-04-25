@@ -1,0 +1,40 @@
+---
+
+# - hosts: app
+#   tasks:
+#     - name: install git
+#       become: true #droits/sudo
+#       yum:
+#         name: git
+#         state: latest
+#
+#     - name: clone the project
+#       become: true
+#       git:
+#         repo: 'https://gitlab.octo.com/nbovorasmy/esiee-tp-final.git'
+#         dest: /opt/project
+
+# App
+- hosts: app
+  become: yes
+  roles:
+    - role: data-engineering-app
+
+# Mongodb
+- hosts: mongodb
+  become: true
+  roles:
+    #- role: mongodb
+    - role: mongo
+
+# Elasticsearch
+- hosts: elasticsearch
+  become: true
+  roles:
+    - role: elasticsearch
+
+# Haproxy
+- hosts: haproxy
+  become: true
+  roles:
+    - role: haproxy

@@ -1,0 +1,85 @@
+---
+
+- name: install yum-utils
+  yum:
+    name: yum-utils
+    state: present
+
+- name: install the 'Development tools' package group
+  yum:
+    name: "@Development tools"
+    state: present
+
+# EPEL is Extra Packages for Enterprise Linux.
+# It is software package repository for Red Hat Enterprise Linux (RHEL) and CentOS.
+# They provide free and open source packages that are not available in the official
+# package repository of RHEL and CentOS to extend the functionalities of these operating systems.
+- name: install epel-release
+  package:
+    name: epel-release
+    state: present
+
+# Python
+- name: install python3 repository
+  yum:
+    name: https://centos7.iuscommunity.org/ius-release.rpm
+    state: present
+
+- name: install python3.6 packages
+  yum:
+    update_cache: True
+    name:
+      - python36u
+      - python36u-libs
+      - python36u-devel
+      - python36u-pip
+      - python36u-setuptools
+
+- name: install gcc compilator since it is required to install some of pip dependencies
+  yum:
+    name: gcc
+
+- name: upgrade pip
+  command: pip3.6 install --upgrade pip
+
+- name: install python-setuptools
+  yum:
+    name: python-setuptools
+    update_cache: yes
+    state: latest
+
+- name: create /app directory
+  file:
+    path: /app
+    state: directory
+
+- name: copy local app zip file into the Vm and unzip it
+  unarchive:
+    src: data-engineering.tar
+    dest: /app/
+
+- name: move base.html to the right location
+  become: true
+  #command: mv /app/data-engineering/templates/base.html /app/data-engineering/main/templates creates=/app/data-engineering/main/templates removes=/app/data-engineering/templates/base.html
+  command: mv /app/data-engineering/templates/base.html /app/data-engineering/main/templates removes=/app/data-engineering/templates/base.html
+
+- name: download pip dependencies
+  pip:
+    executable: /bin/pip3.6
+    requirements: /app/data-engineering/requirements.txt
+
+# on déclare un service systemd pour exécuter le code python
+- name: copy local service config file to the target
+  copy:
+    src: app.service
+    dest: /etc/systemd/system/
+
+# on démarre le service et on s'assure qu'il fonctionne correctement
+- name: reload services
+  command: systemctl daemon-reload
+
+- name: start app.service
+  service:
+    name: app.service
+    enabled: yes
+    state: started

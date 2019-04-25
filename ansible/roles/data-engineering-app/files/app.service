@@ -1,0 +1,12 @@
+[Unit]
+Description=Data engineering Python app
+After=multi-user.target
+
+[Service]
+Type=simple
+Environment="ELASTICSEARCH_URL=http://192.168.201.13:9200"
+Environment="MONGODB_URI=mongodb://192.168.201.14:27017"
+ExecStart=/bin/python3.6 /app/data-engineering/run.py > /var/log/python-app.log
+
+[Install]
+WantedBy=multi-user.target

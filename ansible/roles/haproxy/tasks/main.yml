@@ -1,0 +1,38 @@
+---
+- name: install epel-release
+  package:
+    name: epel-release
+    state: present
+
+- name: install HAProxy
+  package:
+    name: haproxy
+    state: present
+
+- name: get HAProxy version
+  command: haproxy -v
+  register: haproxy_version_result
+  changed_when: false
+  check_mode: false
+
+- name: set HAProxy version
+  set_fact:
+    haproxy_version: "{{ '1.5' if '1.5.' in haproxy_version_result.stdout else '1.4' }}"
+
+- name: disabling security enforced linux
+  selinux:
+    state: disabled
+
+- name: copy HAProxy configuration in place.
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    mode: 0644
+    validate: haproxy -f %s -c -q
+  notify: restart haproxy
+
+- name: ensure HAProxy is started and enabled on boot
+  service:
+    name: haproxy
+    state: started
+    enabled: yes

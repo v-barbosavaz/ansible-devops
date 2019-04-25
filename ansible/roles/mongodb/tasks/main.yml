@@ -1,0 +1,11 @@
+---
+- name: add repo file
+  become: true
+  copy:
+    src: mongodb-org.repo
+    dest: /etc/yum.repos.d/
+
+- name: install mongodb
+  become: true
+  yum:
+    name: mongodb-org
